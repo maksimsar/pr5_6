@@ -1,0 +1,48 @@
+html {
+  font-family: 'helvetica neue', helvetica, arial, sans-serif;
+}
+
+body {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+h1, h2 {
+  font-family: 'Faster One', cursive;
+  color: #000000;
+}
+
+h1 {
+  font-size: 4rem;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 3 колонки */
+  gap: 15px;
+  margin: 20px auto;
+  padding: 15px;
+}
+
+.product {
+  border: 2px solid #000000;
+  border-radius: 5px;
+  background-color: #ffffff;
+  padding: 15px;
+  text-align: center;
+}
+
+.product h2 {
+  margin: 10px 0;
+  color: #000000;
+  font-size: 1.5rem;
+}
+
+.product p {
+  margin: 5px 0;
+  line-height: 1.3;
+  font-size: 1rem;
+}

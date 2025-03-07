@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #fff; 
+            color: #000;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #000;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .product-item {
+            border: 1px solid #000;
+            padding: 15px;
+            background: #fff;
+            border-radius: 3px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .product-item button {
+            padding: 8px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .product-item button:hover {
+            background: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Добавить новый товар</h2>
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Название" required><br>
+        <input type="number" id="price" placeholder="Цена" required><br>
+        <textarea id="description" placeholder="Описание"></textarea><br>
+        <input type="text" id="categories" placeholder="Категории (через запятую)"><br>
+        <button type="submit">+ Добавить</button>
+    </form>
+
+    <h2>Список товаров</h2>
+    <div id="productList"></div>
+</div>
+
+<script>
+const API_URL = "http://localhost:3000/products";
+
+function loadProducts() {
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(products => {
+            const productList = document.getElementById("productList");
+            productList.innerHTML = ""; 
+            products.forEach(product => {
+                const productElement = document.createElement("div");
+                productElement.classList.add("product-item");
+                productElement.innerHTML = `
+                    <strong>${product.name}</strong> - ${product.price} руб.
+                    <p>${product.description || "Без описания"}</p>
+                    <p>Категории: ${product.categories?.join(", ") || "Нет"}</p>
+                    <button onclick="editProduct(${product.id})">✏️ Редактировать</button>
+                    <button onclick="deleteProduct(${product.id})">🗑 Удалить</button>
+                `;
+                productList.appendChild(productElement);
+            });
+        })
+        .catch(error => console.error("Ошибка при загрузке товаров:", error));
+}
+
+document.getElementById("productForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const price = document.getElementById("price").value;
+    const description = document.getElementById("description").value;
+    const categories = document.getElementById("categories").value.split(",").map(cat => cat.trim());
+
+    fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, price, description, categories })
+    })
+    .then(() => {
+        alert("Товар добавлен!");
+        this.reset();
+        loadProducts();
+    })
+    .catch(error => console.error("Ошибка при добавлении товара:", error));
+});
+
+function deleteProduct(id) {
+    if (confirm("Удалить этот товар?")) {
+        fetch(`${API_URL}/${id}`, { method: "DELETE" })
+        .then(() => loadProducts())
+        .catch(error => console.error("Ошибка при удалении товара:", error));
+    }
+}
+
+function editProduct(id) {
+    const newName = prompt("Введите новое название:");
+    const newPrice = prompt("Введите новую цену:");
+    
+    if (newName && newPrice) {
+        fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: newName, price: newPrice })
+        })
+        .then(() => loadProducts())
+        .catch(error => console.error("Ошибка при редактировании товара:", error));
+    }
+}
+
+loadProducts();
+</script>
+
+</body>
+</html>
