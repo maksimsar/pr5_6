@@ -50,10 +50,10 @@ const writeData = (data) => {
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
 };
 
-app.use(express.static(path.join(__dirname, '../Practice5')));
+app.use(express.static(path.join(__dirname, '../5pr')));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../Practice5/index.html'));
+    res.sendFile(path.join(__dirname, '../5pr/index.html'));
 });
 
 app.get('/admin',(req, res) => {

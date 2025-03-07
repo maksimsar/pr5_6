@@ -16,5 +16,15 @@
     "categories": [
       "52"
     ]
+  },
+  {
+    "id": 3,
+    "name": "ма",
+    "price": "13713",
+    "description": "ррр",
+    "categories": [
+      "11",
+      "1111"
+    ]
   }
 ]
