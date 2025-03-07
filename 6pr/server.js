@@ -1,3 +1,4 @@
+const { ApolloServer, gql } = require('apollo-server-express'); // Добавляем GraphQL
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -26,7 +27,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['openapi.yaml'], // укажите путь к файлам с аннотациями
+    apis: ['openapi.yaml'], //путь к файлам с аннотациями
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -36,14 +37,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(bodyParser.json());
 
 // Функция для чтения данных из JSON
-const readData = () => {
+app.get('/products', (req, res) => {
     try {
-        const data = fs.readFileSync(dataFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        return []; // Если файла нет, возвращаем пустой массив
+        const products = readData();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-};
+});
+
 
 // Функция для записи данных в JSON
 const writeData = (data) => {

@@ -109,8 +109,8 @@ function loadProducts() {
                     <strong>${product.name}</strong> - ${product.price} руб.
                     <p>${product.description || "Без описания"}</p>
                     <p>Категории: ${product.categories?.join(", ") || "Нет"}</p>
-                    <button onclick="editProduct(${product.id})">✏️ Редактировать</button>
-                    <button onclick="deleteProduct(${product.id})">🗑 Удалить</button>
+                    <button onclick="editProduct(${product.id})">Редактировать</button>
+                    <button onclick="deleteProduct(${product.id})">Удалить</button>
                 `;
                 productList.appendChild(productElement);
             });
