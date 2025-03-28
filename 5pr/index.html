@@ -1,41 +1,126 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог товаров</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Каталог товаров</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Добавим оформление чата, похожее на admin.html */
+    #chatContainer {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    #chatMessages {
+      border: 1px solid #000;
+      height: 200px;
+      overflow: auto;
+      margin-bottom: 10px;
+      padding: 5px;
+      background: #fff;
+      text-align: left;
+    }
+    #chatInput {
+      width: 75%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    #chatSendBtn {
+      width: 20%;
+      padding: 8px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Каталог товаров</h1>
-    </header>
-    <main class="container">
-        <div id="productList"></div>
-    </main>
-    <script>
-        const API_URL = "http://localhost:3000/products";
-        function loadProducts() {
-            fetch(API_URL)
-                .then(response => response.json())
-                .then(products => {
-                    const productList = document.getElementById("productList");
-                    productList.innerHTML = "";
-                    products.forEach(product => {
-                        const productElement = document.createElement("div");
-                        productElement.classList.add("product");
-                        productElement.innerHTML = `
-                            <h2>${product.name}</h2>
-                            <p><strong>Цена:</strong> ${product.price} руб.</p>
-                            <p><strong>Описание:</strong> ${product.description || "Нет описания"}</p>
-                            <p><strong>Категории:</strong> ${product.categories.join(", ")}</p>
-                        `;
-                        productList.appendChild(productElement);
-                    });
-                })
-                .catch(error => console.error("Ошибка при загрузке товаров:", error));
+  <header>
+    <h1>Каталог товаров</h1>
+  </header>
+
+  <!-- Основной контент: список товаров -->
+  <main class="container">
+    <div id="productList"></div>
+  </main>
+
+  <!-- Блок чата (расположен внизу, после списка товаров) -->
+  <div id="chatContainer">
+    <h2>Чат поддержки</h2>
+    <div id="chatMessages"></div>
+    <input type="text" id="chatInput" placeholder="Введите сообщение..." />
+    <button id="chatSendBtn">Отправить</button>
+  </div>
+
+  <script>
+    // ===== GraphQL fetch =====
+    async function loadProducts() {
+      const query = `
+        query {
+          products {
+            id
+            name
+            price
+          }
         }
-        loadProducts();
-    </script>
+      `;
+
+      try {
+        const response = await fetch("/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+        const result = await response.json();
+        const products = result.data.products;
+
+        const productList = document.getElementById("productList");
+        productList.innerHTML = "";
+
+        products.forEach(product => {
+          const productElement = document.createElement("div");
+          productElement.classList.add("product");
+          productElement.innerHTML = `
+            <h2>${product.name}</h2>
+            <p><strong>Цена:</strong> ${product.price} руб.</p>
+          `;
+          productList.appendChild(productElement);
+        });
+      } catch (error) {
+        console.error("Ошибка при загрузке товаров (GraphQL):", error);
+      }
+    }
+
+    // Стартовая загрузка товаров
+    loadProducts();
+
+    // ===== WebSocket (чат) =====
+    const ws = new WebSocket(`ws://${location.host}`);
+
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const chatSendBtn = document.getElementById("chatSendBtn");
+
+    // При получении нового сообщения от любого клиента (админ / покупатель)
+    ws.onmessage = (event) => {
+      const msg = event.data;
+      const p = document.createElement("p");
+      p.textContent = msg;
+      chatMessages.appendChild(p);
+      // Прокрутить вниз при добавлении нового сообщения
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    // Отправка сообщения
+    chatSendBtn.addEventListener("click", () => {
+      if (chatInput.value.trim()) {
+        ws.send("Покупатель: " + chatInput.value);
+        chatInput.value = "";
+      }
+    });
+  </script>
 </body>
 </html>
